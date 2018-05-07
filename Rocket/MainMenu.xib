@@ -16,7 +16,7 @@
         </customObject>
         <menu id="pVe-nb-s0y">
             <items>
-                <menuItem title="Add Project" id="RGB-ZV-7Qz">
+                <menuItem title="Load Project" id="RGB-ZV-7Qz">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="addProject" target="YYb-75-eSP" id="SII-tQ-2i3"/>

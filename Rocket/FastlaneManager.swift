@@ -14,21 +14,27 @@ public class FastlaneManager {
         var availableActions = [String]()
         let fileManager = FileManager.default
         do {
-            
             if fileManager.fileExists(atPath: "\(forPath.path)/fastlane") {
                 if fileManager.fileExists(atPath: "\(forPath.path)/fastlane/README.md") {
                     let readmeUrl = URL(string: "\(forPath.absoluteString)/fastlane/README.md")!
                     let readme = try String(contentsOf: readmeUrl)
                     if readme != "" {
-                        let filtered = readme.components(separatedBy: "## iOS\n")[1].components(separatedBy: "----")[0]
-                        let actions = filtered.components(separatedBy: "### ios ")
-                        
-                        for action in actions {
-                            for a in action.components(separatedBy: "```") {
-                                if a.contains("fastlane ") {
-                                    availableActions.append(String(a.filter { !"\n".contains($0) }))
+                        if fileManager.fileExists(atPath: "\(forPath.path)/fastlane/Fastfile") {
+                            let fastFile = try String(contentsOf: URL(string: "\(forPath.absoluteString)/fastlane/Fastfile")!)
+                            
+                            let platform = fastFile.components(separatedBy: "default_platform(:")[1].components(separatedBy: ")")[0]
+                            let filtered = readme.lowercased().components(separatedBy: "## \(platform)\n")[1].components(separatedBy: "----")[0]
+                            let actions = filtered.components(separatedBy: "### ios ")
+                            
+                            for action in actions {
+                                for a in action.components(separatedBy: "```") {
+                                    if a.contains("fastlane ") {
+                                        availableActions.append(String(a.filter { !"\n".contains($0) }))
+                                    }
                                 }
                             }
+                        } else {
+                            print("Fastfile not found")
                         }
                     }
                 } else {

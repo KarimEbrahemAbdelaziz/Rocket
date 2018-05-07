@@ -31,12 +31,8 @@ class StatusMenuController: NSObject {
     }
     
     func addActions() {
-        let quitItem = statusMenu.item(at: 2)
-        statusMenu.removeItem(at: 0)
-        if (statusMenu.item(at: 1)?.isSeparatorItem)! {
-            statusMenu.removeItem(NSMenuItem.separator())
-        }
-        statusMenu.removeItem(quitItem!)
+        let quitItem = statusMenu.items.last
+        statusMenu.removeAllItems()
 
         let fileArray = self.trackedProject.absoluteString.components(separatedBy: "/").dropLast()
         statusMenu.addItem(withTitle: fileArray.last!, action: nil, keyEquivalent: "")
@@ -49,6 +45,11 @@ class StatusMenuController: NSObject {
             item.target = self
             statusMenu.addItem(item)
         }
+        let loadAnotherItem = NSMenuItem(title: "Load an other project", action: #selector(addProject(_:)), keyEquivalent: "")
+        loadAnotherItem.isEnabled = true
+        loadAnotherItem.target = self
+        statusMenu.addItem(NSMenuItem.separator())
+        statusMenu.addItem(loadAnotherItem)
         statusMenu.addItem(quitItem!)
         statusMenu.update()
     }
@@ -76,17 +77,15 @@ class StatusMenuController: NSObject {
         }
     }
     
-    @objc func runAction(_ sender: NSMenuItem) {
-        shell("open -a Terminal > cd \(self.trackedProject.absoluteString)")
-    }
-    
-    private func shell(_ args: String) {
-        let task = Process()
-        task.launchPath = "/bin/sh"
-        task.arguments = ["-c", args]
-        let pipe = Pipe()
-        task.standardOutput = pipe
-        task.launch()
-        task.waitUntilExit()
+    @objc func runAction(_ action: NSMenuItem) {
+        let args = "cd \(self.trackedProject!.path) && \(action.title)"
+        let script = """
+        tell application "Terminal" \n\
+        do script "\(args)" \n\
+        activate \n\
+        end tell
+        """
+        let appleScript = NSAppleScript(source: script)
+        appleScript?.executeAndReturnError(nil)
     }
 }
